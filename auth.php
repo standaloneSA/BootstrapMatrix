@@ -9,11 +9,19 @@ function initSession() {
 	//
 	// Uses $Developer and $Application from secrets.php
 
+	global $DEBUG; 
+	global $Application; 
+	global $Developer; 
+	global $Application;
+	global $GoogleScopes; 
+	global $GoogleClient; 
+	
 	if ( $DEBUG ) error_log("Doing session_start"); 
 	session_start(); 
 	
+	
 	if ( $DEBUG ) error_log("Beginning Google_Client()");
-	global $GoogleClient = new Google_Client();
+	$GoogleClient = new Google_Client();
 	$GoogleClient->setApplicationName($Application['GoogleAppName']); 
 	$GoogleClient->setClientId($Application['GoogleClientId']); 
 	$GoogleClient->setClientSecret($Application['GoogleClientSecret']);

@@ -1,6 +1,9 @@
 BootstrapMatrix
 ===============
 
+Fair Warning: I don't know what I'm doing yet, and this isn't ready for prime time. 
+
+
 Bootstrap with APIs and custom libraries to make my life easier. 
 
 It seems pretty common in my life that I would like an environment that is built quickly, and can do decent looking things. This is my environment that will help. It's a bootstrap instance with various other PHP APIs and some custom javascript and CSS.

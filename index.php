@@ -15,7 +15,7 @@ require_once 'googleAPI/src/Google_Client.php';
 // require_once 'googleAPI/src/contrib/Google_BigqueryService.php';
 // require_once 'googleAPI/src/contrib/Google_BloggerService.php';
 // require_once 'googleAPI/src/contrib/Google_BooksService.php';
-// require_once 'googleAPI/src/contrib/Google_CalendarService.php';
+require_once 'googleAPI/src/contrib/Google_CalendarService.php';
 // require_once 'googleAPI/src/contrib/Google_CivicInfoService.php';
 // require_once 'googleAPI/src/contrib/Google_ComputeService.php';
 // require_once 'googleAPI/src/contrib/Google_CoordinateService.php';
@@ -23,7 +23,7 @@ require_once 'googleAPI/src/Google_Client.php';
 // require_once 'googleAPI/src/contrib/Google_DatastoreService.php';
 // require_once 'googleAPI/src/contrib/Google_DfareportingService.php';
 // require_once 'googleAPI/src/contrib/Google_DirectoryService.php';
-// require_once 'googleAPI/src/contrib/Google_DriveService.php';
+require_once 'googleAPI/src/contrib/Google_DriveService.php';
 // require_once 'googleAPI/src/contrib/Google_FreebaseService.php';
 // require_once 'googleAPI/src/contrib/Google_FusiontablesService.php';
 // require_once 'googleAPI/src/contrib/Google_GamesManagementService.php';
@@ -68,7 +68,12 @@ require_once 'googleDriveFuncs.php';
 // Sets up, verifies, and tears down the connection(s), as needed. 
 require_once 'auth.php'; 
 
-global $DEBUG=0; 
+global $GoogleClient; 
+global $DEBUG; 
+global $Application; 
+global $Developer; 
+
+$DEBUG=0; 
 if ($_GET['DEBUG']) {
 	$DEBUG=1; 
 }
@@ -77,9 +82,11 @@ if ($_GET['DEBUG']) {
 // Available scopes can be found here: 
 // https://www.googleapis.com/discovery/v1/apis/
 // (with an explanation here: https://developers.google.com/discovery/) 
-global $GoogleScopes = array(
-	"https://www.googleapis.com/auth/userinfo.email",
-	"https://www.googleapis.com/auth/userinfo.profile",
+$GoogleScopes = array(
+		"https://www.googleapis.com/auth/drive.readonly", 
+		"https://www.googleapis.com/auth/userinfo.email",
+		"https://www.googleapis.com/auth/userinfo.profile",
+		"https://spreadsheets.google.com/feeds"
 	); 
 
 function printHeaderBar( ) {
@@ -97,7 +104,7 @@ function printHeaderBar( ) {
 
 
 // Before displaying the page, lets get set up (from auth.php):
-initSession.php(); 
+//initSession(); 
 
 // Set our spreadsheet (getWorksheet is in googleDriveFuncs.php):
 $arrContents = getWorksheet("Spreadsheet Name", "Sheet 1"); 
@@ -125,11 +132,14 @@ $arrContents = getWorksheet("Spreadsheet Name", "Sheet 1");
 
 printHeaderBar(); 
 
-foreach ( $arrContents as $curRecord ) { 
-	// displayRecord() is in googleDriveFuncs.php
-	displayRecord($curRecord); 
+if ( $_SESSION['token'] ) { 
+	foreach ( $arrContents as $curRecord ) { 
+		// displayRecord() is in googleDriveFuncs.php
+		displayRecord($curRecord); 
+	}
+} else {
+	displayGoogleAuth(); 
 }
-
 
 ?>
 

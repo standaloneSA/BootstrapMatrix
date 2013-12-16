@@ -35,6 +35,8 @@ function getGDriveContents($serivce, $file) {
 function googleSSConnect() { 
 // Connects to the Google Spreadsheet service, returns the service obj. 
 
+	global $GoogleClient; 
+	
 	if (isset($_SESSION['token'])) {
       if ( $DEBUG ) error_log("Found token.");
       $GoogleClient->setAccessToken($_SESSION['token']);
@@ -68,7 +70,9 @@ return getWSContents($wsName, getWorksheets($ssName));
 
 } // end getWorksheet()
 
-function getWorksheets($ssName) { 
+function getWorksheets($ssName) {
+	if ($DEBUG) error_log("In getWorksheets()");
+	global $GoogleClient;  
 // Retrieves worksheets in $ssName 
 // returns the worksheet feed object
 	if ($GoogleClient->getAccessToken()) {
@@ -114,7 +118,8 @@ function getWSContents($wsName, $wsFeed) {
 
 } //end getWSFeed()
 
-function displayGoogleAuth() { 
+function displayGoogleAuth() {
+	global $GoogleClient;  
 // Displayes the normal "sign in with Google" image
 	print '<center><a href="' . $GoogleClient->createAuthUrl() . '"><img src="https://developers.google.com/accounts/images/sign-in-with-google.png" border=0 width=250></a>'; 
 }
