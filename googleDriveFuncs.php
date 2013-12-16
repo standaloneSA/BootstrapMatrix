@@ -71,8 +71,10 @@ return getWSContents($wsName, getWorksheets($ssName));
 } // end getWorksheet()
 
 function getWorksheets($ssName) {
-	if ($DEBUG) error_log("In getWorksheets()");
+	global $DEBUG;
 	global $GoogleClient;  
+	
+	if ($DEBUG) error_log("In getWorksheets()");
 // Retrieves worksheets in $ssName 
 // returns the worksheet feed object
 	if ($GoogleClient->getAccessToken()) {
@@ -119,8 +121,9 @@ function getWSContents($wsName, $wsFeed) {
 } //end getWSFeed()
 
 function displayGoogleAuth() {
+	// Displayes the normal "sign in with Google" image
+
 	global $GoogleClient;  
-// Displayes the normal "sign in with Google" image
 	print '<center><a href="' . $GoogleClient->createAuthUrl() . '"><img src="https://developers.google.com/accounts/images/sign-in-with-google.png" border=0 width=250></a>'; 
 }
 

@@ -73,7 +73,7 @@ global $DEBUG;
 global $Application; 
 global $Developer; 
 
-$DEBUG=0; 
+$DEBUG=1; 
 if ($_GET['DEBUG']) {
 	$DEBUG=1; 
 }
@@ -104,10 +104,9 @@ function printHeaderBar( ) {
 
 
 // Before displaying the page, lets get set up (from auth.php):
-//initSession(); 
+initSession(); 
 
 // Set our spreadsheet (getWorksheet is in googleDriveFuncs.php):
-$arrContents = getWorksheet("Spreadsheet Name", "Sheet 1"); 
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -132,7 +131,8 @@ $arrContents = getWorksheet("Spreadsheet Name", "Sheet 1");
 
 printHeaderBar(); 
 
-if ( $_SESSION['token'] ) { 
+if ( $_SESSION['token'] ) {
+	$arrContents = getWorksheet("Spreadsheet Name", "Sheet 1");  
 	foreach ( $arrContents as $curRecord ) { 
 		// displayRecord() is in googleDriveFuncs.php
 		displayRecord($curRecord); 
