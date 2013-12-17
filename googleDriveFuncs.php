@@ -77,7 +77,9 @@ function getWorksheets($ssName) {
 	if ($DEBUG) error_log("In getWorksheets()");
 // Retrieves worksheets in $ssName 
 // returns the worksheet feed object
+	print "Google Client: <pre>" . print_r($GoogleClient) . "</pre><br>"; 
 	if ($GoogleClient->getAccessToken()) {
+		if ($DEBUG) error_log("Found GoogleClient Access Token");
 		if ($DEBUG) error_log("Getting spreadsheet list");
 		try {
 			$ssFeed = $ssService->getSpreadsheets();
@@ -102,7 +104,7 @@ function getWorksheets($ssName) {
 			return $worksheetFeed; 
 		}
 	} else { 
-		throw new Exception("Unable to find access token"); 
+		throw new Exception("Unable to find Google access token"); 
 	}
 
 } // end getWorksheets() 
@@ -140,4 +142,13 @@ function displayRecord($record) {
       print_r($record);
       print "</pre>";
    }
+}
+
+function showCrit($string) {
+	print "<div class='alert alert-danger'>$string</div>"; 
+	error_log($string);
+}
+
+function showSuccess($string) {
+	print "<div class='alert alert-success'>$string</div>"; 
 }

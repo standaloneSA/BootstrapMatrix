@@ -69,9 +69,9 @@ require_once 'googleDriveFuncs.php';
 require_once 'auth.php'; 
 
 global $GoogleClient; 
-global $DEBUG; 
 global $Application; 
 global $Developer; 
+global $DEBUG; 
 
 $DEBUG=1; 
 if ($_GET['DEBUG']) {
@@ -104,6 +104,7 @@ function printHeaderBar( ) {
 
 
 // Before displaying the page, lets get set up (from auth.php):
+if ($DEBUG) error_log("Launching initSession()"); 
 initSession(); 
 
 // Set our spreadsheet (getWorksheet is in googleDriveFuncs.php):
@@ -129,15 +130,32 @@ initSession();
 		
 <?php 
 
+// Adds the HTMLnecessary to draw the top menu
 printHeaderBar(); 
 
+
 if ( $_SESSION['token'] ) {
-	$arrContents = getWorksheet("Spreadsheet Name", "Sheet 1");  
+	error_log("Found session token"); 
+	try { $arrContents = getWorksheet("Worksheet", "Sheet 1"); } 
+	catch (Exception $e) {
+		print '<div class="alert alert-danger">Error: ' . $e->getMessage() . '</div>'; 
+		error_log("Exception: " . $e->getMessage()); 
+		if ($DEBUG) {
+			print 'GoogleClient: <pre>'; 
+			print_r($GoogleClient); 
+			print '</pre>';
+			print 'Token:<br>'; 
+			print $GoogleClient->getAccessToken(); 
+			print '<br>Application:<br><pre>'; 
+			print_r($Application); 
+		}
+	}  
 	foreach ( $arrContents as $curRecord ) { 
 		// displayRecord() is in googleDriveFuncs.php
 		displayRecord($curRecord); 
 	}
 } else {
+	error_log('displaying login thing'); 
 	displayGoogleAuth(); 
 }
 

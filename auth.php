@@ -15,10 +15,11 @@ function initSession() {
 	global $Application;
 	global $GoogleScopes; 
 	global $GoogleClient; 
+	global $drive;
 	
 	if ( $DEBUG ) error_log("Doing session_start"); 
 	session_start(); 
-	
+	print "<pre>" . print_r($_SESSION) . "</pre>"; 
 	
 	if ( $DEBUG ) error_log("Beginning Google_Client()");
 	$GoogleClient = new Google_Client();
@@ -43,19 +44,25 @@ function initSession() {
 	   $mtime = explode(" ",$mtime); 
 	   $mtime = $mtime[1] + $mtime[0]; 
 	   $starttime = $mtime; 
-	   $GoogleClient->authenticate(); 
-	 	$mtime = microtime(); 
+	   try { $GoogleClient->authenticate(); } 
+	   catch (Exception $e) {
+	   	 showCrit("Error trying to authenticate with GoogleClient: " . $e->getMessage()); } 
+	   $mtime = microtime(); 
 	   $mtime = explode(" ",$mtime); 
 	   $mtime = $mtime[1] + $mtime[0]; 
 	   $endtime = $mtime; 
 	   $totaltime = ($endtime - $starttime); 
 	
-	   if ( $DEBUG ) error_log("Authentication Complete (after $totaltime seconds). Redirecting."); 
+	   if ( $DEBUG ) showCrit("Authentication Complete (after $totaltime seconds). Redirecting."); 
 
 	   $_SESSION['token'] = $GoogleClient->getAccessToken();
 
 	   $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 	   header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
+	}
+	
+	if (isset($_SESSION['token']) ) {
+		$GoogleClient->setAccessToken($_SESSION['token']); 
 	}
 } // end initSession() 
 
