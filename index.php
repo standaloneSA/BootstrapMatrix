@@ -15,7 +15,7 @@ require_once 'googleAPI/src/Google_Client.php';
 // require_once 'googleAPI/src/contrib/Google_BigqueryService.php';
 // require_once 'googleAPI/src/contrib/Google_BloggerService.php';
 // require_once 'googleAPI/src/contrib/Google_BooksService.php';
-require_once 'googleAPI/src/contrib/Google_CalendarService.php';
+// require_once 'googleAPI/src/contrib/Google_CalendarService.php';
 // require_once 'googleAPI/src/contrib/Google_CivicInfoService.php';
 // require_once 'googleAPI/src/contrib/Google_ComputeService.php';
 // require_once 'googleAPI/src/contrib/Google_CoordinateService.php';
@@ -68,13 +68,10 @@ require_once 'googleDriveFuncs.php';
 // Sets up, verifies, and tears down the connection(s), as needed. 
 require_once 'auth.php'; 
 
-global $GoogleClient; 
-global $Application; 
-global $Developer; 
 global $DEBUG; 
 
-$DEBUG=1; 
-if ($_GET['DEBUG']) {
+$DEBUG=0; 
+if (isset($_GET['DEBUG'])) {
 	$DEBUG=1; 
 }
 
@@ -89,26 +86,9 @@ $GoogleScopes = array(
 		"https://spreadsheets.google.com/feeds"
 	); 
 
-function printHeaderBar( ) {
-// This function creates a header bar at the top of the page. 
-// Customize however you need. 
-	print '	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-			<div class="container">
-				<div class="navbar-header">
-					<a class="navbar-brand" href="?#">Title Goes Here</a>
-				</div>
-			</div>
-		</div>
-	'; 
-} // end printHeaderBar()
 
-
-// Before displaying the page, lets get set up (from auth.php):
-if ($DEBUG) error_log("Launching initSession()"); 
-initSession(); 
-
-// Set our spreadsheet (getWorksheet is in googleDriveFuncs.php):
-?>
+function openPage() {
+	print ' 
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -126,41 +106,25 @@ initSession();
 		
 	</head>
 	<body>
-			
+	'; 
+} // end openPage()
+
+function printHeaderBar( ) {
+// This function creates a header bar at the top of the page. 
+// Customize however you need. 
+	print '	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="container">
+				<div class="navbar-header">
+					<a class="navbar-brand" href="?#">Title Goes Here</a>
+				</div>
+			</div>
+		</div>
+	'; 
+} // end printHeaderBar()
 		
-<?php 
-
-// Adds the HTMLnecessary to draw the top menu
-printHeaderBar(); 
-
-
-if ( $_SESSION['token'] ) {
-	error_log("Found session token"); 
-	try { $arrContents = getWorksheet("Worksheet", "Sheet 1"); } 
-	catch (Exception $e) {
-		print '<div class="alert alert-danger">Error: ' . $e->getMessage() . '</div>'; 
-		error_log("Exception: " . $e->getMessage()); 
-		if ($DEBUG) {
-			print 'GoogleClient: <pre>'; 
-			print_r($GoogleClient); 
-			print '</pre>';
-			print 'Token:<br>'; 
-			print $GoogleClient->getAccessToken(); 
-			print '<br>Application:<br><pre>'; 
-			print_r($Application); 
-		}
-	}  
-	foreach ( $arrContents as $curRecord ) { 
-		// displayRecord() is in googleDriveFuncs.php
-		displayRecord($curRecord); 
-	}
-} else {
-	error_log('displaying login thing'); 
-	displayGoogleAuth(); 
-}
-
-?>
-
+function closePage() {
+	print ' 
+	
 		<script src="js/jquery.min.js"></script>
 
 		<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
@@ -169,4 +133,56 @@ if ( $_SESSION['token'] ) {
 		<!-- Add a js file for the curent app (to be modified as needed) -->
 		<script src="js/AppName.js"></script>
 	</body>
-</html>
+</html>'; 
+
+} // end closePage()
+
+
+openPage(); 
+
+printHeaderBar(); 
+
+// This block sets up the connection that we'll use for the 
+// rest of theq queries. $googleClient is the object that 
+// everything else will need. 
+try {
+	// $Application and $Developer are arrays full of keys and credentials that are stored in secrets.php
+	// We need to grab the $GoogleClient that initSession() creates, because the various Google Docs and 
+	// Google Drive calls need it. It stores the user's token. 
+	 $GoogleClient = initSession($Application, $Developer, $GoogleScopes);
+} catch (Exception $e) {
+	showCrit("There was an error initializing the connection to Google: <br>" . $e->getMessage()); 
+	closePage(); 
+	exit; 
+} 
+
+$Workbook = "Moving"; 
+$Worksheet = "Trucks"; 
+
+// If the client doesn't have an access token, then they need to log in 
+// with Google and get one. Once they've done that, there will be a 
+// a hashed string returned from getAccessToken. 
+// Code in initSession() is responsible for making sure that 
+// $GoogleClient->getAccessToken() sets $_SESSION['token']  
+if ( ! $GoogleClient->getAccessToken() ) {
+	showWarn("Please log in with your Google Drive credentials"); 
+	displayGoogleAuth();
+	closePage(); 
+	exit;  
+} 
+	
+// Now we're free to draw the page. First we get the contents of the worksheet we're interested in
+try {
+	 $arrContents = getWorksheet($GoogleClient, $Workbook, $Worksheet); 
+} catch (Exception $e) {
+	showCrit('Error: ' . $e->getMessage()); 
+}  
+
+// Then we loop through the results: 
+	foreach ( $arrContents as $curRecord ) { 
+		// displayRecord() is in googleDriveFuncs.php
+		displayRecord($curRecord); 
+	}
+
+// End with closePage() so the javascript includes and various tags get closed. 
+closePage(); 

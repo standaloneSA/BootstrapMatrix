@@ -36,6 +36,7 @@ function googleSSConnect() {
 // Connects to the Google Spreadsheet service, returns the service obj. 
 
 	global $GoogleClient; 
+	global $DEBUG; 
 	
 	if (isset($_SESSION['token'])) {
       if ( $DEBUG ) error_log("Found token.");
@@ -63,92 +64,136 @@ function googleSSConnect() {
 	}
 } // end googleSSConnect
 
-function getWorksheet($ssName, $wsName) { 
+function getWorksheet($GoogleClient, $wbName, $wsName) { 
 // Wrapper function for getWorksheets() and getWSContents()
 
-return getWSContents($wsName, getWorksheets($ssName)); 
-
+	$worksheetFeed = getWorksheets($GoogleClient, $wbName); 
+	if ( $worksheetFeed ) { 
+		return getWSContents($worksheetFeed, $wsName); 
+	} else {
+		return 0; 
+	}
 } // end getWorksheet()
 
-function getWorksheets($ssName) {
+function getWorksheets($GoogleClient, $wbName) {
+// Retrieves worksheets in $wbName (which is assumed to be 
+// a text string of the name of a workbook) 
+// returns the worksheet feed object. 
+
 	global $DEBUG;
-	global $GoogleClient;  
 	
-	if ($DEBUG) error_log("In getWorksheets()");
-// Retrieves worksheets in $ssName 
-// returns the worksheet feed object
-	print "Google Client: <pre>" . print_r($GoogleClient) . "</pre><br>"; 
+	// Make sure we're logged in and everything is set up correctly. 
 	if ($GoogleClient->getAccessToken()) {
-		if ($DEBUG) error_log("Found GoogleClient Access Token");
-		if ($DEBUG) error_log("Getting spreadsheet list");
 		try {
+			$ssService = googleSSConnect(); 
 			$ssFeed = $ssService->getSpreadsheets();
 		} catch (Exception $e) {
 			if ( $e->getCode() == "401" ) {
-				error_log("Error with token. Must relog in.");
+				showCrit("Error with token. Must relog in.");
 				session_unset();
 				$redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
 				header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
 			} else {
-				throw $e; 
+				// If we're not sure, punt and hopefully someone can figure it out. 
+				showCrit("Error: " . $e->getMessage());
+				return 0; 
 			}
 		}
-		if ( ! $ssFeed ) throw new Exception('Unable to obtain spreadsheet feed'); 
-		$spreadsheet = $ssFeed->getByTitle($ssName); 
-		if ( ! $spreadsheet )  throw new Exception("Error: Unable to find spreadsheet"); 
 
+		if ( ! $ssFeed ) {
+			 showCrit('Unable to obtain spreadsheet feed');
+			return 0; 
+		} 
+		
+		// $ssFeed is an object which contains a feed of all of the spreadsheets 
+		// we have access to. It's not an array, so we can't just iterate through it
+		// Instead, we have to use its methods to pull the information out that we need.
+		$spreadsheet = $ssFeed->getByTitle($wbName); 
+
+		if ( ! $spreadsheet ) {
+			showCrit("Error: Unable to find spreadsheet"); 
+			return 0; 
+		} 
+
+		// Likewise, a spreadsheet (or workbook) consists of one or more worksheets. 
+		// These worksheets also form feed, and you query them in much the same way. 
 		$worksheetFeed = $spreadsheet->getWorksheets();
 		if ( ! $worksheetFeed ) { 
-			throw new Exception("Error: Unable to list worksheets");
-		} else { 
+			showCrit("Error: Unable to list worksheets");
+			return 0; 
+		} else {
+			// In this case, everything went well (seemingly), so we'll 
+			// return the $worksheetFeed object, which is a series of 
+			// associative arrays. Read the official Google Spreadsheets API
+			// for more info: https://developers.google.com/google-apps/spreadsheets/ 
 			return $worksheetFeed; 
 		}
 	} else { 
-		throw new Exception("Unable to find Google access token"); 
+		showCrit("Unable to find Google access token");
+		return 0;  
 	}
 
 } // end getWorksheets() 
 
-function getWSContents($wsName, $wsFeed) { 
-// Will return only the worksheet cells, in an assoc array
+function getWSContents($wsFeed, $wsName) {
+// Needs a worksheet feed object (which is the object containing the individual 
+// worksheets in a spreadsheet or workbook) and the name of the worksheet you
+// want the contents of. 
+// Will return only the worksheet cells with headers, as outlined in the 
+// Google Spreadsheets API v3 doc here: 
+// https://developers.google.com/google-apps/spreadsheets/
 
 	$ws = $wsFeed->getByTitle($wsName); 
-	if ( ! $ws ) throw new Exception("Unable to find worksheet"); 
+	if ( ! $ws ) { 
+		showCrit("Unable to find worksheet");
+		return 0; 
+	} 
 
 	$listFeed = $ws->getListFeed(); 
-	if ( ! $listFeed ) throw new Exception("Unable to create feed from worksheet"); 
+	if ( ! $listFeed ) {
+		showCrit("Unable to create feed from worksheet");	
+		return 0; 
+	} 
 
 	return $listFeed->getEntries(); 
 
 } //end getWSFeed()
 
-function displayGoogleAuth() {
-	// Displayes the normal "sign in with Google" image
+function displayGoogleAuth($width=250) {
+// Displayes the normal "sign in with Google" image
+// defaults to width=250
 
 	global $GoogleClient;  
-	print '<center><a href="' . $GoogleClient->createAuthUrl() . '"><img src="https://developers.google.com/accounts/images/sign-in-with-google.png" border=0 width=250></a>'; 
+	print '<center><a href="' . $GoogleClient->createAuthUrl() . '"><img src="https://developers.google.com/accounts/images/sign-in-with-google.png" border=0 width=' . $width . '></a>'; 
 }
 
 
 function displayRecord($record) { 
-   // This function is what can be used to display a single record from a Google Spreadsheet. 
-   // It needs to be crafted to each use case, but it's farcically simple to do when you
-   // use Bootstrap's methods: 
-   // http://getbootstrap.com/components/
+ // This function is what can be used to display a single record from a Google Spreadsheet. 
+ // It needs to be crafted to each use case, but it's farcically simple to do when you
+ // use Bootstrap's methods: 
+ // http://getbootstrap.com/components/
 
-   if ($DEBUG) {
-      // A lot of times, you really just want to see what you get from the spreadsheet. 
-      print "<pre>";
-      print_r($record);
-      print "</pre>";
-   }
-}
+	
+	// By default, lets just do a print_r() to see what the record contains. 
+	print "<pre>";
+	print_r($record);
+	print "</pre>";
+	print "<br><hr><br>";
+
+} // end displayRecord()
 
 function showCrit($string) {
 	print "<div class='alert alert-danger'>$string</div>"; 
 	error_log($string);
-}
+} // end showCrit()
+
+function showWarn($string) {
+	print "<div class='alert alert-warning'>$string</div>"; 
+	error_log($string);
+} // end showWarn()
+
 
 function showSuccess($string) {
 	print "<div class='alert alert-success'>$string</div>"; 
-}
+} // end showSuccess()
