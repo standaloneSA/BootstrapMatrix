@@ -156,8 +156,8 @@ try {
 	exit; 
 } 
 
-$Workbook = "Moving"; 
-$Worksheet = "Trucks"; 
+$Workbook = "Spreadsheet Name"; 
+$Worksheet = "Sheet1"; 
 
 // If the client doesn't have an access token, then they need to log in 
 // with Google and get one. Once they've done that, there will be a 

@@ -32,29 +32,23 @@ function getGDriveContents($serivce, $file) {
    }   
 } // end getGDriveContents() 
 
-function googleSSConnect() { 
+function googleSSConnect($GoogleClient) { 
 // Connects to the Google Spreadsheet service, returns the service obj. 
 
-	global $GoogleClient; 
 	global $DEBUG; 
 	
 	if (isset($_SESSION['token'])) {
-      if ( $DEBUG ) error_log("Found token.");
       $GoogleClient->setAccessToken($_SESSION['token']);
 
       $SESSIONobj = json_decode($_SESSION['token']);
-      if ( $DEBUG ) error_log("Creating new Google Spreadsheet Request"); 
 
       $SSRequest = new Google\Spreadsheet\Request($SESSIONobj->access_token); 
 
-      if ( $DEBUG ) error_log("Creating new default service request"); 
       $serviceRequest = new Google\Spreadsheet\DefaultServiceRequest($SSRequest); 
 		if ( ! $serviceRequest ) throw new Exception('Unable to create new service request'); 
 
-      if ( $DEBUG ) error_log("Setting Service Request Factory Instance"); 
       Google\Spreadsheet\ServiceRequestFactory::setInstance($serviceRequest); 
 
-      if ( $DEBUG ) error_log("Creating new spreadsheet service"); 
       $ssService = new Google\Spreadsheet\SpreadsheetService(); 
 		if ( ! $ssService ) throw new Exception('Unable to create new Spreadsheet Service'); 
 
@@ -85,7 +79,7 @@ function getWorksheets($GoogleClient, $wbName) {
 	// Make sure we're logged in and everything is set up correctly. 
 	if ($GoogleClient->getAccessToken()) {
 		try {
-			$ssService = googleSSConnect(); 
+			$ssService = googleSSConnect($GoogleClient); 
 			$ssFeed = $ssService->getSpreadsheets();
 		} catch (Exception $e) {
 			if ( $e->getCode() == "401" ) {
