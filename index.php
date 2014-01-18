@@ -33,7 +33,7 @@ require_once 'googleAPI/src/contrib/Google_DriveService.php';
 // require_once 'googleAPI/src/contrib/Google_LicensingService.php';
 // require_once 'googleAPI/src/contrib/Google_MirrorService.php';
 // require_once 'googleAPI/src/contrib/Google_ModeratorService.php';
-// require_once 'googleAPI/src/contrib/Google_Oauth2Service.php';
+require_once 'googleAPI/src/contrib/Google_Oauth2Service.php';
 // require_once 'googleAPI/src/contrib/Google_OrkutService.php';
 // require_once 'googleAPI/src/contrib/Google_PagespeedonlineService.php';
 // require_once 'googleAPI/src/contrib/Google_PlusDomainsService.php';
@@ -95,6 +95,14 @@ function openPage() {
 		<title>TITLE GOES HERE</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 		
+		<script src="http://code.jquery.com/jquery-2.0.3.js"></script>
+
+		<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+		<!-- For local version: <script src="js/bootstrap.min.js"></script> --> 
+
+		<!-- Add a js file for the curent app (to be modified as needed) -->
+		<script src="js/AppName.js"></script>
+		
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
 		<!-- To use the local version: <link href="css/bootstrap.css" rel="stylesheet"/> -->
 		
@@ -109,13 +117,23 @@ function openPage() {
 	'; 
 } // end openPage()
 
-function printHeaderBar( ) {
+function printHeaderBar($GoogleClient=0) {
 // This function creates a header bar at the top of the page. 
 // Customize however you need. 
 	print '	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
 			<div class="container">
 				<div class="navbar-header">
 					<a class="navbar-brand" href="?#">Title Goes Here</a>
+			'; 
+			if ($GoogleClient) {
+				$loggedInUser = getUserEmail($GoogleClient); 
+				if ($loggedInUser) { 
+					print '<p class="navbar-text">Logged in as ' . $loggedInUser . '</p>'; 
+					print '<li class="active pull-right"><a href="?logout=1">Logout</a></li>'; 
+				}
+			} 
+			
+			print '
 				</div>
 			</div>
 		</div>
@@ -140,8 +158,6 @@ function closePage() {
 
 openPage(); 
 
-printHeaderBar(); 
-
 // This block sets up the connection that we'll use for the 
 // rest of theq queries. $googleClient is the object that 
 // everything else will need. 
@@ -151,6 +167,7 @@ try {
 	// Google Drive calls need it. It stores the user's token. 
 	 $GoogleClient = initSession($Application, $Developer, $GoogleScopes);
 } catch (Exception $e) {
+
 	showCrit("There was an error initializing the connection to Google: <br>" . $e->getMessage()); 
 	closePage(); 
 	exit; 
@@ -165,11 +182,14 @@ $Worksheet = "Sheet1";
 // Code in initSession() is responsible for making sure that 
 // $GoogleClient->getAccessToken() sets $_SESSION['token']  
 if ( ! $GoogleClient->getAccessToken() ) {
+	printHeaderBar(); 
 	showWarn("Please log in with your Google Drive credentials"); 
 	displayGoogleAuth();
 	closePage(); 
 	exit;  
 } 
+
+printHeaderBar($GoogleClient); 
 	
 // Now we're free to draw the page. First we get the contents of the worksheet we're interested in
 try {
@@ -177,6 +197,24 @@ try {
 } catch (Exception $e) {
 	showCrit('Error: ' . $e->getMessage()); 
 }  
+
+if (isset($_GET['logout'])) {
+	// We're killing the session
+	setcookie('PHPSESSID', "");  
+	session_destroy(); 
+	print '<meta http-equiv="refresh" content="0; url=index.php">' ;	
+	exit; 
+} 
+
+
+if (!$arrContents) {
+	print '<h3>No records found. Perhaps you\'ve logged in as the wrong user?</h3>'; 
+	printHeaderBar($GoogleClient); 
+	closePage(); 
+	exit; 
+}  
+
+
 
 // Then we loop through the results: 
 	foreach ( $arrContents as $curRecord ) { 

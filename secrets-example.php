@@ -12,13 +12,13 @@
 
 
 // The developer key is called the "Server Key" in the API Cloud Console
-global $Developer = array(
-	"GoogleDeveloperKey"		=> "DeveloperKeyGoesHere"
+$Developer = array(
+	"GoogleDeveloperKey"	=> "DeveloperKeyGoesHere"
 	); 
 
-global $Application = array(
-	"GoogleAppName"		=> "Your App Name", 
-	"GoogleRedirectURI"	=> "URL Goes Here", 
+$Application = array(
+	"GoogleAppName"			=> "Your App Name", 
+	"GoogleRedirectURI"		=> "URL Goes Here", 
 	"GoogleClientId"		=> "Google Client ID Goes Here", 
 	"GoogleClientSecret"	=> "Google Client Secret Goes Here"
 	); 

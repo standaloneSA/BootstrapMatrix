@@ -24,7 +24,8 @@ function initSession($Application, $Developer, $GoogleScopes) {
 	// Sadly, right now, $scopes is going to be global. 
 	$GoogleClient->setScopes($GoogleScopes);
 
-	$driveService = new Google_DriveService($GoogleClient);  
+	$driveService = new Google_DriveService($GoogleClient);
+	$userInfoService = new Google_Oauth2Service($GoogleClient);   
 	
 	// When Google redirects people back to our site (Using the RedirectURI), ?code=XXXXXXXXX is set, 
 	// which is the user's token. We will then set $_SESSION['token'] to that value, and then when 

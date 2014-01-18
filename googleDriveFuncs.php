@@ -94,7 +94,7 @@ function getWorksheets($GoogleClient, $wbName) {
 			}
 		}
 
-		if ( ! $ssFeed ) {
+		if ( ! isset($ssFeed) ) {
 			 showCrit('Unable to obtain spreadsheet feed');
 			return 0; 
 		} 
@@ -137,7 +137,13 @@ function getWSContents($wsFeed, $wsName) {
 // Google Spreadsheets API v3 doc here: 
 // https://developers.google.com/google-apps/spreadsheets/
 
-	$ws = $wsFeed->getByTitle($wsName); 
+
+	if (is_object($wsFeed)) { 
+		$ws = $wsFeed->getByTitle($wsName);
+	} else {
+		showCrit("Error: Invalid worksheet");
+		return 0; 
+	} 
 	if ( ! $ws ) { 
 		showCrit("Unable to find worksheet");
 		return 0; 
@@ -161,8 +167,33 @@ function displayGoogleAuth($width=250) {
 	print '<center><a href="' . $GoogleClient->createAuthUrl() . '"><img src="https://developers.google.com/accounts/images/sign-in-with-google.png" border=0 width=' . $width . '></a>'; 
 }
 
+function getRowFeedObj($wsFeed, $wsName) {
+// Similar to getWSContents() except it returns the object
 
-function displayRecord($record) { 
+	if (is_object($wsFeed)) {
+		$ws = $wsFeed->getByTitle($wsName);
+	} else {
+		showCrit("Error: Invalid worksheet feed"); 
+		return 0; 
+	}	 
+
+	if ( ! $ws ) { 
+		showCrit("Unable to find worksheet");
+		return 0; 
+	}
+
+	$listFeed = $ws->getListFeed(); 
+	if ( ! $listFeed ) {
+		showCrit("Unable to create row feed from worksheet");	
+		return 0; 
+	} 
+
+	return $listFeed; 
+}
+
+
+
+function displayRecord($record, $GoogleClient) { 
  // This function is what can be used to display a single record from a Google Spreadsheet. 
  // It needs to be crafted to each use case, but it's farcically simple to do when you
  // use Bootstrap's methods: 
@@ -191,3 +222,13 @@ function showWarn($string) {
 function showSuccess($string) {
 	print "<div class='alert alert-success'>$string</div>"; 
 } // end showSuccess()
+
+
+function getUserEmail($GoogleClient) {
+	$userInfoService = new Google_Oauth2Service($GoogleClient); 
+	try { $userEmail = $userInfoService->userinfo->get()->email; } catch (Exception $e) {
+		error_log("Error retrieving user email adddress: " . $e->getMessage()); 
+	}
+	
+	return $userEmail; 
+}
