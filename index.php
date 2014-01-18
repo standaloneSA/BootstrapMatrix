@@ -103,11 +103,14 @@ function openPage() {
 		<!-- Add a js file for the curent app (to be modified as needed) -->
 		<script src="js/AppName.js"></script>
 		
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"/>
 		<!-- To use the local version: <link href="css/bootstrap.css" rel="stylesheet"/> -->
 		
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"/>
 		<!-- To use the local version: <link href="css/font-awesome.css" rel="stylesheet"/> -->
+		
+		<link rel="stylesheet" href="//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css"/>
+		<script src="//code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
 		
 		<!-- Add in our custom style sheet (to be modified as needed, per app) -->
 		<link href="css/AppName.css" rel="stylesheet"/>
