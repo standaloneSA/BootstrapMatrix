@@ -130,9 +130,11 @@ function printHeaderBar($GoogleClient=0) {
 			'; 
 			if ($GoogleClient) {
 				$loggedInUser = getUserEmail($GoogleClient); 
-				if ($loggedInUser) { 
+				if ($loggedInUser) {
+					print '<ul class="nav navbar-nav navbar-right">'; 
 					print '<p class="navbar-text">Logged in as ' . $loggedInUser . '</p>'; 
-					print '<li class="active pull-right"><a href="?logout=1">Logout</a></li>'; 
+					print '<li class="active pull-right"><a href="?logout=1">Logout</a></li>';
+					print '</ul>';  
 				}
 			} 
 			
