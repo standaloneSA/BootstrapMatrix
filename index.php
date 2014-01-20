@@ -127,14 +127,17 @@ function printHeaderBar($GoogleClient=0) {
 			<div class="container">
 				<div class="navbar-header">
 					<a class="navbar-brand" href="?#">Title Goes Here</a>
+				</div>
 			'; 
 			if ($GoogleClient) {
 				$loggedInUser = getUserEmail($GoogleClient); 
 				if ($loggedInUser) {
+					print '<div class="collapse navbar-collapse">'; 
 					print '<ul class="nav navbar-nav navbar-right">'; 
 					print '<p class="navbar-text">Logged in as ' . $loggedInUser . '</p>'; 
 					print '<li class="active pull-right"><a href="?logout=1">Logout</a></li>';
 					print '</ul>';  
+					print '</div>'; 
 				}
 			} 
 			
