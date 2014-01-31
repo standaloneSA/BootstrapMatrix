@@ -97,13 +97,13 @@ function openPage() {
 		
 		<script src="http://code.jquery.com/jquery-2.0.3.js"></script>
 
-		<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+		<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
 		<!-- For local version: <script src="js/bootstrap.min.js"></script> --> 
 
 		<!-- Add a js file for the curent app (to be modified as needed) -->
 		<script src="js/AppName.js"></script>
 		
-		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css"/>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css"/>
 		<!-- To use the local version: <link href="css/bootstrap.css" rel="stylesheet"/> -->
 		
 		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"/>
